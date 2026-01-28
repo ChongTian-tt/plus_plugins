@@ -19,6 +19,8 @@ flutter:
       android:
         package: dev.fluttercommunity.plus.androidintent
         pluginClass: AndroidIntentPlugin
+      ohos:
+        pluginClass: OhosIntentPlugin
 
 dependencies:
   flutter:

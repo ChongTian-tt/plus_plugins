@@ -53,6 +53,16 @@
         <action android:name="com.example.broadcast" />
       </intent-filter>
     </receiver>
+
+    <!-- 后台服务声明 -->
+    <service
+      android:name=".MyBackgroundService"
+      android:enabled="true"
+      android:exported="false">
+      <intent-filter>
+        <action android:name="android.intent.action.MAIN" />
+      </intent-filter>
+    </service>
   </application>
 
 </manifest>

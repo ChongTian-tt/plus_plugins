@@ -1,0 +1,52 @@
+{
+  "app": {
+    "signingConfigs": [
+      {
+        "name": "default",
+        "type": "HarmonyOS",
+        "material": {
+          "certpath": "C:\\Users\\hoperun\\.ohos\\config\\default_ohos_EDwcYchOK0taShxrc6_OlAPsWULgWmpyZuoDRzXlgbo=.cer",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001ADA95EA9F11D3D8D7152A4958C0A9278E80D6FDEAB73BE2890BF1CDC55D9E5EDC5FBCEA655B4B",
+          "profile": "C:\\Users\\hoperun\\.ohos\\config\\default_ohos_EDwcYchOK0taShxrc6_OlAPsWULgWmpyZuoDRzXlgbo=.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\hoperun\\.ohos\\config\\default_ohos_EDwcYchOK0taShxrc6_OlAPsWULgWmpyZuoDRzXlgbo=.p12",
+          "storePassword": "0000001A2340A59D2A1FCB4127010BCD1C0F116628B35EDFC61551FA98A243A0909D029E209C4035E91A"
+        }
+      }
+    ],
+    "products": [
+      {
+        "name": "default",
+        "signingConfig": "default",
+        "compatibleSdkVersion": "6.0.0(20)",
+        "runtimeOS": "HarmonyOS",
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "profile"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}
