@@ -96,10 +96,6 @@ class MyHomePage extends StatelessWidget {
               child: const Text('Tap here to send Intent as broadcast'),
             ),
             ElevatedButton(
-              onPressed: _startService,
-              child: const Text('Tap here to start service'),
-            ),
-            ElevatedButton(
               onPressed: () => _openExplicitIntentsView(context),
               child: const Text('Tap here to test explicit intents.'),
             ),
@@ -134,35 +130,13 @@ class MyHomePage extends StatelessWidget {
     intent.launchChooser('Chose an app');
   }
 
-  void _startService() {
-    if (const LocalPlatform().operatingSystem == 'ohos') {
-      const intent = AndroidIntent(
-        action: '',
-        package: 'com.example.android_intent_plus_example',
-        componentName: 'EntryAbility',
-        arguments: <String, dynamic>{
-          'actionType': 1,
-          'requestCode': 0,
-          'actionFlags': [3],
-          'mode': 3,
-        },
-      );
-      intent.sendService();
-    } else {
-      // 启动服务
-      const intent = AndroidIntent(
-        action: 'android.intent.action.MAIN',
-        package: 'io.flutter.plugins.androidintentexample',
-        componentName: 'io.flutter.plugins.androidintentexample.MyBackgroundService',
-      );
-      intent.sendService();
-    }
-  }
-
   void _sendBroadcast() {
     if (const LocalPlatform().operatingSystem == 'ohos') {
       const intent = AndroidIntent(
         action: 'com.example.broadcast',
+        arguments: <String, dynamic>{
+          'code': 0,
+        },
       );
       intent.sendBroadcast();
       return;

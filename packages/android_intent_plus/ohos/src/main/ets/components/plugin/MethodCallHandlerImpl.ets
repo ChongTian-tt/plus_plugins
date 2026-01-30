@@ -1,9 +1,22 @@
+/*
+* Copyright (C) 2026 Huawei Device Co., Ltd.
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*     http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
+
 import { MethodChannel, MethodCall, MethodResult, BinaryMessenger, MethodCallHandler, Any } from '@ohos/flutter_ohos';
 import { WantSender } from './WantSender';
 import { hilog } from '@kit.PerformanceAnalysisKit';
-import { Want, common, insightIntent } from '@kit.AbilityKit';
-import { reminderAgentManager } from '@kit.BackgroundTasksKit';
-
+import { Want } from '@kit.AbilityKit';
 
 const TAG = 'MethodCallHandlerImpl';
 const CHANNEL_NAME = 'dev.fluttercommunity.plus/android_intent';
@@ -21,7 +34,6 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
       hilog.info(0x0000, TAG, "Setting a method call handler before the last was disposed.");
       this.stopListening();
     }
-    hilog.info(0x0000, TAG, 'startListening');
     this.methodChannel = new MethodChannel(messenger, CHANNEL_NAME);
     this.methodChannel.setMethodCallHandler(this);
   }
@@ -36,17 +48,11 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
   }
 
   async onMethodCall(call: MethodCall, result: MethodResult): Promise<void> {
-    hilog.info(0x0000, TAG, 'onMethodCall');
     let want = this.getCallArguments(call);
     try {
       switch (call.method) {
         case 'launch':
           await this.launch(want);
-          result.success(null);
-          break;
-
-        case 'sendService':
-          await this.sender.sendService(want);
           result.success(null);
           break;
 
@@ -67,13 +73,18 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
           result.success(null);
           break;
 
+        case 'sendService':
+          // 此功能仅2in1设备且企业应用支持
+          result.notImplemented();
+          break;
+
         case 'canResolveActivity':
-          // 此功能仅系统应用支持 三方应用不支持
+          // 此功能仅系统应用支持
           result.notImplemented();
           break;
 
         case 'getResolvedActivity':
-          // 此功能仅系统应用支持 三方应用不支持
+          // 此功能仅系统应用支持
           result.notImplemented();
           break;
 
@@ -92,11 +103,9 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
     const category = call.argument('category') as string | null;
     const data = call.argument('data') as string | null;
 
-    // 从Map中获取参数
     const rawArgsMap: ESObject = call.argument("arguments");
     let args: Record<string, Object> = {};
 
-    // 检查是否有forEach方法可用
     if (rawArgsMap && typeof rawArgsMap.forEach === 'function') {
       rawArgsMap.forEach((value: ESObject, key: string) => {
         hilog.info(0x0000, TAG, `Map Key: ${key}, Value: ${value}, Type: ${typeof value}`);
@@ -104,18 +113,15 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
       });
     }
 
-    // 获取参数前先进行详细调试日志
     const rawArrayArguments = call.argument('arrayArguments') as Record<string, Object[]>;
     const packageName = call.argument('package') as string | null;
     const componentName = call.argument('componentName') as string | null;
     const type = call.argument('type') as string | null;
     const entities = call.argument('entities') as string[] | null;
-    hilog.info(0x0000, TAG, 'entities is ' + JSON.stringify(entities));
 
-    // 合并arguments和arrayArguments
     let mergedArguments: Record<string, Object> = {};
 
-    // 使用转换后的args
+    // 转换args
     this.getMergeArgs(args, mergedArguments, rawArrayArguments);
 
     let want: Want | null = this.sender.buildWant(
@@ -130,7 +136,6 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
       entities
     );
 
-    hilog.info(0x0000, TAG, 'want is ' + JSON.stringify(want));
     if (want) {
       return want;
     } else {
@@ -139,7 +144,6 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
   }
 
   private recursivelyConvertMap(obj: ESObject): Object {
-    // 如果是基本类型，直接返回
     if (obj === null || typeof obj !== 'object') {
       return obj;
     }
@@ -150,7 +154,6 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
       for (let i = 0; i < obj.length; i++) {
         result.push(this.recursivelyConvertMap(obj[i]));
       }
-      hilog.info(0x0000, TAG, `Converted array: ${JSON.stringify(result)}`);
       return result;
     }
 
@@ -158,7 +161,6 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
     if (typeof (obj as ESObject).forEach === 'function') {
       const converted: Record<string, Object> = {};
       (obj as ESObject).forEach((value: ESObject, key: string) => {
-        hilog.info(0x0000, TAG, `Converting nested Map - Key: ${key}, Value: ${value}, Type: ${typeof value}`);
         converted[key] = this.recursivelyConvertMap(value);
       });
       return converted;
@@ -176,40 +178,28 @@ export class MethodCallHandlerImpl implements MethodCallHandler {
 
   private getMergeArgs(args: Record<string, Object> | null, mergedArguments: Record<string, Object>,
     arrayArguments: Record<string, Object[]> | null) {
-    hilog.info(0x0000, TAG,
-      'getMergeArgs called - args: ' + JSON.stringify(args) + ', arrayArguments: ' + JSON.stringify(arrayArguments));
-
-    // 复制 arguments
     if (args && typeof args === 'object' && !Array.isArray(args)) {
       const argKeys = Object.keys(args);
-      hilog.info(0x0000, TAG, 'Processing ' + argKeys.length + ' argument keys: ' + JSON.stringify(argKeys));
       for (let i = 0; i < argKeys.length; i++) {
         const key = argKeys[i];
         mergedArguments[key] = args[key];
-        hilog.info(0x0000, TAG, 'Added argument: ' + key + ' = ' + JSON.stringify(args[key]));
       }
-    } else {
-      hilog.info(0x0000, TAG, 'Arguments not processed, either null or not an object');
     }
 
     // 合并 arrayArguments
     if (arrayArguments && typeof arrayArguments === 'object' && !Array.isArray(arrayArguments)) {
       const arrayKeys = Object.keys(arrayArguments);
-      hilog.info(0x0000, TAG, 'Processing ' + arrayKeys.length + ' array argument keys: ' + JSON.stringify(arrayKeys));
       for (let i = 0; i < arrayKeys.length; i++) {
         const key = arrayKeys[i];
         // 对数组参数也进行递归转换
         mergedArguments[key] = this.recursivelyConvertMap(arrayArguments[key]);
-        hilog.info(0x0000, TAG, 'Added array argument: ' + key + ' = ' + JSON.stringify(arrayArguments[key]));
       }
-    } else {
-      hilog.info(0x0000, TAG, 'Array arguments not processed, either null or not an object');
     }
   }
 
   private async launch(want: Want): Promise<void> {
-    // 兼容部分场景 data 可能被编码成 geo%3A...
     try {
+      // 兼容部分场景 data 可能被编码成 geo%3A...
       if (want.uri && want.uri.startsWith('geo%3A')) {
         want.uri = decodeURIComponent(want.uri);
       }

@@ -20,10 +20,6 @@
         "startWindowIcon": "$media:icon",
         "startWindowBackground": "$color:start_window_background",
         "exported": true,
-        "backgroundModes": [
-          "audioRecording"
-        ],
-        // 申请长时任务
         "skills": [
           {
             "entities": [
@@ -41,7 +37,7 @@
         "name": "ohos.permission.INTERNET"
       },
       {
-        "name": "ohos.permission.KEEP_BACKGROUND_RUNNING",
+        "name": "ohos.permission.COMMONEVENT_STICKY",
         "reason": "$string:reason",
         "usedScene": {
           "abilities": [
@@ -49,17 +45,7 @@
           ],
           "when": "always"
         }
-      },
-      {
-        "name": "ohos.permission.PUBLISH_AGENT_REMINDER",
-        "reason": "$string:reason",
-        "usedScene": {
-          "abilities": [
-            "EntryAbility"
-          ],
-          "when": "always"
-        }
-      },
+      }
     ],
     "extensionAbilities": [
       {
